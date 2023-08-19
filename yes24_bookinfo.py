@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 
-from bs4 import BeautifulSoup
+import re
 import argparse
+
+from bs4 import BeautifulSoup
 
 import yes24
 import spider
@@ -34,12 +36,14 @@ def bookinfo(goodsid, showurl):
     desc = detail[0].text if detail else ''
     toc = detail[1].text if detail and len(detail) > 1 else ''
 
+    formatdate = lambda s: re.sub(r'(\d+)년 (\d+)월 (\d+)일', r'\1-\2-\3', s)
+
     return {
         "goodsid": goodsid,
         "title": title,
         "url": url,
         "author": author.strip(),
-        "pubdate": soup.select_one("span.gd_date").text,
+        "pubdate": formatdate(soup.select_one("span.gd_date").text),
         "desc": desc,
         "toc": toc
     }
