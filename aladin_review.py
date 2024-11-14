@@ -131,7 +131,7 @@ def commentReviewList(info, orderer, csv, showurl):
         HL_write = hundred.select_one("div.HL_write")
         buy = "구매" if HL_write.select_one("img") else ''
         li = hundred.select("li")
-        content = li[0].select_one("div").select("div")[1].text.strip()
+        content = li[0].select_one("div").text.strip()
         left = li[1].select_one("div.left")
         
         result.append({
