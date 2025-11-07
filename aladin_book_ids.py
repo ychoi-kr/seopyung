@@ -12,7 +12,7 @@ import spider
 site = "https://www.aladin.co.kr"
 
 
-def main(publisher, page):
+def main(publisher, page, exact_match):
 
     qrylist = [
         ("SearchTarget", "Book"),
@@ -46,15 +46,29 @@ def main(publisher, page):
     html = spider.readurl(url)
     soup = BeautifulSoup(html, 'html.parser')
 
-    for x in soup.find_all("a", "bo3"):
-        print(x.attrs["href"].split('=')[1])
+    # 각 책 항목 처리
+    for item in soup.select("div.ss_book_list > ul"):
+        # exact_match인 경우 출판사 먼저 확인
+        if exact_match:
+            publisher_link = item.find("a", href=re.compile(r"PublisherSearch"))
+            if not publisher_link:
+                continue
+            actual_publisher = publisher_link.text.strip()
+            if actual_publisher != publisher:
+                continue
+
+        # book_id 추출 및 출력
+        book_link = item.find("a", "bo3")
+        if book_link:
+            print(book_link.attrs["href"].split('=')[1])
    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--publisher", default="위키북스", type=str)
     parser.add_argument("--page", default=1, type=int)
+    parser.add_argument("--exact_match", action="store_true", help="출판사명과 완전히 일치하는 결과만 출력")
     args = parser.parse_args()
-    main(args.publisher, args.page)
+    main(args.publisher, args.page, args.exact_match)
 
 
