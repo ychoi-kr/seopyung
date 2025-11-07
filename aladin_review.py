@@ -40,12 +40,26 @@ def bookinfo(itemid, showurl):
     publisher = ap[-1].text
     pubdate = re.search(r"\d{4}-\d{2}-\d{2}", li.text).group()
 
+    # 'conts_info_list1' 클래스를 가진 div 태그 찾기
+    info_list_div = soup.find('div', class_='conts_info_list1')
+    
+    # 해당 div 내부의 모든 li 태그 찾기
+    li_tags = info_list_div.find_all('li')
+    
+    # 각 li 태그의 텍스트를 검사하여 ISBN 정보 추출
+    isbn_number = None
+    for li in li_tags:
+        if 'ISBN' in li.text:
+            isbn_number = li.text.split(':')[-1].strip()  # ISBN 번호 추출
+            break
+
     return {
         "itemid": itemid,
         "title": title,
         "url": url,
         "author": authors,
-        "pubdate": pubdate
+        "pubdate": pubdate,
+        "isbn13": isbn_number,
     }
 
 
