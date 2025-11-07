@@ -38,6 +38,10 @@ def bookinfo(goodsid, showurl):
 
     formatdate = lambda s: re.sub(r'(\d+)년 (\d+)월 (\d+)일', r'\1-\2-\3', s)
 
+    # Find the ISBN13 number
+    isbn13_row = soup.find('th', text='ISBN13')
+    isbn13_number = isbn13_row.find_next_sibling('td').text.strip() if isbn13_row else None
+
     return {
         "goodsid": goodsid,
         "title": title,
@@ -45,7 +49,8 @@ def bookinfo(goodsid, showurl):
         "author": author.strip(),
         "pubdate": formatdate(soup.select_one("span.gd_date").text),
         "desc": desc,
-        "toc": toc
+        "toc": toc,
+        "isbn13": isbn13_number,
     }
 
 def main(goodsid):

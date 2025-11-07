@@ -13,6 +13,7 @@ def print_csv_header():
         '"구매"',
         '"평점"',
         '"리뷰"',
+        '"ISBN13"',
         sep=','
     )
 
@@ -31,6 +32,7 @@ def display(info, reviewlist, csv):
                 quote(review["buy"]),
                 quote(review["rating"]),
                 quote(review["content"]),
+                quote(info["isbn13"]),
                 sep=','
             )
             sys.stdout.flush()

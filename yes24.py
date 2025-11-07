@@ -5,6 +5,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import argparse
 import re
+import sys
 
 
 site = "http://www.yes24.com"
@@ -115,6 +116,10 @@ def display(booklist, order, csv, id_only):
 
 
 def search(keyword, domain, order, category, publisher, page, showurl):
+    if keyword is None or keyword.strip() == "":
+        print("오류: 검색 키워드가 필요합니다. 키워드를 입력해 주세요.", file=sys.stderr)
+        sys.exit(1)
+
     result = []
 
     inckey = [k for k in keyword.split() if not k.startswith('-')]

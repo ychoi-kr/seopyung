@@ -45,12 +45,19 @@ def bookinfo(itemid, showurl):
     pubdate = soup.find('div', class_='prod_info_text publish_date').contents[-1].replace('·', '').strip()
     pubdate = re.sub(r'(\d+)년 (\d+)월 (\d+)일', r'\1-\2-\3', pubdate)
 
+    # ISBN 번호를 포함하는 td 태그 찾기
+    isbn_tag = soup.find('th', string="ISBN").find_next_sibling('td')
+    
+    # ISBN 번호 추출
+    isbn_number = isbn_tag.text.strip()
+
     return {
         "itemid": itemid,
         "title": title,
         "url": url,
         "author": authors,
-        "pubdate": pubdate
+        "pubdate": pubdate,
+        "isbn13": isbn_number,
     }
 
 

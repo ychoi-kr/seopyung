@@ -45,7 +45,7 @@ def goodsReviewList(info, order, csv):
             "reviewdate": review.select_one("em.txt_date").text,
             "reviewerid": review.select_one("em.txt_id > a").text,
             "buy": buy.text.strip() if buy else '',
-            "rating": "내용 " + review.select_one("span.rating").text.strip() + "  편집/디자인 " + review.select_one("span.rating").text.strip(),
+            "rating": review.select_one("span.review_rating").text,
             "content": ' '.join(review.select_one("div.review_cont").text.split())
         })
         
