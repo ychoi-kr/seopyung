@@ -4,6 +4,7 @@ from urllib import parse
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import argparse
+import json
 import re
 import sys
 
@@ -68,13 +69,16 @@ mkEntrNo = {
     "위키북스(eBook)": "284569"
 }
 
-def main(keyword, domain, order, category, publisher, page, showurl, csv, id_only):
+def main(keyword, domain, order, category, publisher, page, showurl, csv, id_only, output_json):
+    booklist = search(keyword, domain, order, category, publisher, page, showurl)
+    display(booklist, order, csv, id_only, output_json)
 
 
-    display(search(keyword, domain, order, category, publisher, page, showurl), order, csv, id_only)
+def display(booklist, order, csv, id_only, output_json):
+    if output_json:
+        print(json.dumps(booklist, ensure_ascii=False, indent=2))
+        return
 
-
-def display(booklist, order, csv, id_only):
     if csv:
         print(
             '"URL"',
@@ -116,10 +120,6 @@ def display(booklist, order, csv, id_only):
 
 
 def search(keyword, domain, order, category, publisher, page, showurl):
-    if keyword is None or keyword.strip() == "":
-        print("오류: 검색 키워드가 필요합니다. 키워드를 입력해 주세요.", file=sys.stderr)
-        sys.exit(1)
-
     result = []
 
     inckey = [k for k in keyword.split() if not k.startswith('-')]
@@ -139,20 +139,29 @@ def search(keyword, domain, order, category, publisher, page, showurl):
     if category and category.lower() != "all":
         if category.startswith('0'):
             qrylist.append(("dispno2", category))
-        else:
+        elif category.lower() in categorymap:
             qrylist.append(("dispno2", categorymap[category.lower()]))
+        else:
+            print(f"오류: 알 수 없는 카테고리 '{category}'", file=sys.stderr)
+            print(f"사용 가능: all, {', '.join(sorted(set(categorymap.keys())))}", file=sys.stderr)
+            sys.exit(1)
 
     if publisher:
-        qrylist.append((
-            "mkEntrNo",
-            ','.join(map(lambda x: mkEntrNo[x], publisher.split(',')))
-        ))
+        codes = []
+        for name in publisher.split(','):
+            name = name.strip()
+            if name not in mkEntrNo:
+                print(f"오류: 알 수 없는 출판사 '{name}'", file=sys.stderr)
+                print(f"사용 가능: {', '.join(sorted(mkEntrNo.keys()))}", file=sys.stderr)
+                sys.exit(1)
+            codes.append(mkEntrNo[name])
+        qrylist.append(("mkEntrNo", ','.join(codes)))
 
     qrystr = parse.urlencode(qrylist)
     url = site + "/Product/Search?" + qrystr
 
     if showurl:
-        print("Opening", url, "...\n")
+        print("Opening", url, "...\n", file=sys.stderr)
 
     with urlopen(url) as f:
         html = f.read().decode('utf-8')
@@ -162,7 +171,7 @@ def search(keyword, domain, order, category, publisher, page, showurl):
 
     for item in yesSchList:
         saleNum = item.select_one("span.saleNum").text.replace("판매지수", '').strip() if item.select_one("span.saleNum") else None
-        
+
         title = dict()
         title["gd_res"] = item.select_one("span.gd_res").text
         title["title"] = item.select_one("div.info_row.info_name > a.gd_name").text.strip()
@@ -172,7 +181,7 @@ def search(keyword, domain, order, category, publisher, page, showurl):
         title["publisher"] = item.select_one("span.authPub.info_pub > a").text
         title["pubdate"] = item.select_one("span.authPub.info_date").text
         title["saleNum"] = saleNum if saleNum else ''
-        
+
         skip = False
         for k in exckey:
             if any(map(lambda x: k in x, title.values())):
@@ -184,20 +193,85 @@ def search(keyword, domain, order, category, publisher, page, showurl):
         if not skip:
             result.append(title)
     return result
-   
+
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--domain", default="국내도서", choices=["전체", "국내도서", "외국도서", "eBook", "중고샵"])
-    parser.add_argument("--order", default="인기도순", choices=["인기도순", "정확도순", "신상품순", "최저가순", "최고가순", "평점순", "리뷰순", "판매지수순"])
-    parser.add_argument("--category", default="001001003", type=str)
-    parser.add_argument("--publisher", type=str)
-    parser.add_argument("--page", default=1, type=int)
-    parser.add_argument("--showurl", action=argparse.BooleanOptionalAction)
-    parser.add_argument("--csv", action=argparse.BooleanOptionalAction)
-    parser.add_argument("--id_only", action=argparse.BooleanOptionalAction)
-    parser.add_argument("keyword", nargs='?', type=str)
+    category_names = sorted(set(categorymap.keys()))
+    publisher_names = sorted(mkEntrNo.keys())
+
+    parser = argparse.ArgumentParser(
+        description="""\
+YES24 도서 검색 스크립트.
+
+YES24 서점 웹사이트에서 키워드로 도서를 검색한다.
+검색은 YES24의 상품 검색 기능을 사용하며, 제목·저자·출판사 등을 대상으로 한다.
+
+검색 동작:
+  - 키워드에 포함된 단어는 AND 조건으로 검색된다.
+    예: "파이썬 위키북스" → '파이썬'과 '위키북스'가 모두 포함된 결과
+  - -접두사를 붙인 단어는 결과에서 제외한다 (클라이언트 필터링).
+    제외 대상은 제목, 부제, 저자, 출판사 등 모든 필드이다.
+    예: "Rust -일러스트 -애니" → 'Rust' 검색 후 '일러스트', '애니' 포함 결과 제거
+  - --publisher는 YES24에 등록된 출판사 코드로 서버 필터링한다.
+    키워드 검색과 다르며, 등록된 출판사 이름만 사용 가능하다.
+
+출력 필드 (JSON/CSV):
+  gd_res      상품 유형 ("[도서]", "[eBook]" 등)
+  title       제목
+  subtitle    부제 (없으면 빈 문자열)
+  url         YES24 상품 페이지 URL (상품 ID 포함)
+  author      저자/역자
+  publisher   출판사
+  pubdate     발행일 (예: "2026년 03월")
+  saleNum     판매지수 (예: "16,821", 없으면 빈 문자열)
+
+제약:
+  - 페이지당 약 20~40건. 한 번에 한 페이지만 조회한다.
+  - --id_only는 URL에서 숫자 상품 ID만 추출한다. yes24_review.py에 파이프 가능.""",
+        epilog=f"""\
+사용 예:
+  %(prog)s 파이썬                                 전체 카테고리에서 인기도순 검색
+  %(prog)s "파이썬 위키북스"                       복수 키워드 AND 검색
+  %(prog)s "Rust -일러스트 -애니"                  제외 키워드
+  %(prog)s --order 신상품순 --category it AWS      IT 카테고리, 신상품순
+  %(prog)s --id_only 위키북스                      상품 ID만 출력 (파이프라인용)
+  %(prog)s --json 파이썬                           JSON 출력
+
+파이프라인 예 (검색 → 리뷰 수집):
+  %(prog)s --id_only 위키북스 | yes24_review.py --csv > 리뷰.csv
+
+카테고리 이름 (--category):
+  {', '.join(category_names)}
+  'all'이면 카테고리 필터 없이 검색. 코드 직접 지정도 가능 (예: 001001003)
+
+등록된 출판사 (--publisher):
+  {', '.join(publisher_names)}
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("keyword", type=str,
+                        help="검색 키워드. 공백으로 AND 검색, -접두사로 제외")
+    parser.add_argument("--domain", default="국내도서",
+                        choices=sorted(domainmap.keys()),
+                        help="검색 도메인 (기본: 국내도서)")
+    parser.add_argument("--order", default="인기도순",
+                        choices=["인기도순", "정확도순", "신상품순", "최저가순", "최고가순", "평점순", "리뷰순", "판매지수순"],
+                        help="정렬 순서 (기본: 인기도순). 판매지수순은 클라이언트 정렬")
+    parser.add_argument("--category", default="all", type=str,
+                        help="카테고리 이름 또는 코드 (기본: all)")
+    parser.add_argument("--publisher", type=str,
+                        help="출판사 서버 필터. 등록된 이름만 가능, 쉼표 구분")
+    parser.add_argument("--page", default=1, type=int,
+                        help="결과 페이지 번호 (기본: 1)")
+    parser.add_argument("--showurl", action=argparse.BooleanOptionalAction,
+                        help="검색 URL을 stderr에 표시")
+    parser.add_argument("--csv", action=argparse.BooleanOptionalAction,
+                        help="CSV 형식 출력 (헤더 포함)")
+    parser.add_argument("--json", dest="output_json", action=argparse.BooleanOptionalAction,
+                        help="JSON 배열 출력")
+    parser.add_argument("--id_only", action=argparse.BooleanOptionalAction,
+                        help="상품 ID(숫자)만 출력. 줄바꿈 구분")
     args = parser.parse_args()
-    main(args.keyword, args.domain, args.order, args.category, args.publisher, args.page, args.showurl, args.csv, args.id_only)
+    main(args.keyword, args.domain, args.order, args.category, args.publisher, args.page, args.showurl, args.csv, args.id_only, args.output_json)
 
 

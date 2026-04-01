@@ -1,3 +1,4 @@
+import json
 import sys
 import time
 
@@ -46,9 +47,32 @@ def display(info, reviewlist, csv):
             )
 
 
-def mainloop(itemid_list, bookinfo, reviewlist, csv, noheader=False, order=None, showurl=None):
+def mainloop(itemid_list, bookinfo, reviewlist, csv, noheader=False, order=None, showurl=None, output_json=False):
     if not itemid_list:
         itemid_list = sys.stdin
+
+    if output_json:
+        results = []
+        for itemid in itemid_list:
+            info = bookinfo(itemid.strip(), showurl)
+            time.sleep(1)
+            reviews = reviewlist(info, csv, order, showurl)
+            for review in reviews:
+                results.append({
+                    "title": info["title"],
+                    "url": info["url"],
+                    "author": info["author"],
+                    "pubdate": info["pubdate"],
+                    "isbn13": info.get("isbn13"),
+                    "reviewdate": review["reviewdate"],
+                    "reviewerid": review["reviewerid"],
+                    "buy": review["buy"],
+                    "rating": review["rating"],
+                    "content": review["content"],
+                })
+            time.sleep(1)
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+        return
 
     if csv and not noheader:
         print_csv_header()
