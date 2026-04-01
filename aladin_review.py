@@ -159,7 +159,7 @@ def commentReviewList(info, orderer, csv, showurl):
     return result
 
 
-if __name__ == '__main__':
+def _cli():
     parser = argparse.ArgumentParser(
         description="""\
 알라딘 도서 리뷰 수집 스크립트.
@@ -199,7 +199,7 @@ if __name__ == '__main__':
   %(prog)s --json 320211724                         JSON 출력
 
 파이프라인 예 (출판사 도서 목록 → 리뷰 수집):
-  python aladin_book_ids.py --publisher 위키북스 --exact_match | %(prog)s --csv > 리뷰.csv
+  aladin-book-ids --publisher 위키북스 --exact_match | %(prog)s --csv > 리뷰.csv
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -215,4 +215,8 @@ if __name__ == '__main__':
                         help="상품 ID (숫자). 생략 시 stdin에서 줄바꿈 구분으로 읽음")
     args = parser.parse_args()
     main(args.itemid_list, args.csv, args.noheader, args.showurl, output_json=args.output_json)
+
+
+if __name__ == '__main__':
+    _cli()
 

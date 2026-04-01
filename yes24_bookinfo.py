@@ -58,9 +58,13 @@ def main(goodsid):
         print(k, v)
 
 
-if __name__ == '__main__':
+def _cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("goodsid", type=str)
     args = parser.parse_args()
     main(args.goodsid)
+
+
+if __name__ == '__main__':
+    _cli()
 

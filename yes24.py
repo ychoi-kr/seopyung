@@ -195,7 +195,7 @@ def search(keyword, domain, order, category, publisher, page, showurl):
     return result
 
 
-if __name__ == '__main__':
+def _cli():
     category_names = sorted(set(categorymap.keys()))
     publisher_names = sorted(mkEntrNo.keys())
 
@@ -227,7 +227,7 @@ YES24 서점 웹사이트에서 키워드로 도서를 검색한다.
 
 제약:
   - 페이지당 약 20~40건. 한 번에 한 페이지만 조회한다.
-  - --id_only는 URL에서 숫자 상품 ID만 추출한다. yes24_review.py에 파이프 가능.""",
+  - --id_only는 URL에서 숫자 상품 ID만 추출한다. yes24-review에 파이프 가능.""",
         epilog=f"""\
 사용 예:
   %(prog)s 파이썬                                 전체 카테고리에서 인기도순 검색
@@ -238,7 +238,7 @@ YES24 서점 웹사이트에서 키워드로 도서를 검색한다.
   %(prog)s --json 파이썬                           JSON 출력
 
 파이프라인 예 (검색 → 리뷰 수집):
-  %(prog)s --id_only 위키북스 | yes24_review.py --csv > 리뷰.csv
+  %(prog)s --id_only 위키북스 | yes24-review --csv > 리뷰.csv
 
 카테고리 이름 (--category):
   {', '.join(category_names)}
@@ -273,5 +273,9 @@ YES24 서점 웹사이트에서 키워드로 도서를 검색한다.
                         help="상품 ID(숫자)만 출력. 줄바꿈 구분")
     args = parser.parse_args()
     main(args.keyword, args.domain, args.order, args.category, args.publisher, args.page, args.showurl, args.csv, args.id_only, args.output_json)
+
+
+if __name__ == '__main__':
+    _cli()
 
 

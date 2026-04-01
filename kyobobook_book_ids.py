@@ -37,10 +37,14 @@ def main(keyword, page):
             print(x["href"].split('/')[-1])
    
 
-if __name__ == '__main__':
+def _cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("--publisher", default="위키북스", type=str)
     parser.add_argument("--page", default=1, type=int)
     args = parser.parse_args()
     main(args.publisher, args.page)
+
+
+if __name__ == '__main__':
+    _cli()
 

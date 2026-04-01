@@ -63,12 +63,16 @@ def main(publisher, page, exact_match):
             print(book_link.attrs["href"].split('=')[1])
    
 
-if __name__ == '__main__':
+def _cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("--publisher", default="위키북스", type=str)
     parser.add_argument("--page", default=1, type=int)
     parser.add_argument("--exact_match", action="store_true", help="출판사명과 완전히 일치하는 결과만 출력")
     args = parser.parse_args()
     main(args.publisher, args.page, args.exact_match)
+
+
+if __name__ == '__main__':
+    _cli()
 
 

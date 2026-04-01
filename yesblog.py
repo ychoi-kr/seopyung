@@ -16,8 +16,12 @@ def main(seqNo):
         text = soup.select('.blogContArea')[0].text
         print(text)
 
-if __name__ == '__main__':
+def _cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("seqNo", type=str)
     args = parser.parse_args()
     main(args.seqNo)
+
+
+if __name__ == '__main__':
+    _cli()

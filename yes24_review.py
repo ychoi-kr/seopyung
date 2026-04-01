@@ -85,7 +85,7 @@ def awordReviewList(info, order, csv):
     return result
 
 
-if __name__ == '__main__':
+def _cli():
     parser = argparse.ArgumentParser(
         description="""\
 YES24 도서 리뷰 수집 스크립트.
@@ -113,7 +113,7 @@ YES24 상품 ID(숫자)를 받아 해당 도서의 리뷰를 수집한다.
 
 입력:
   상품 ID를 인자로 직접 지정하거나, 생략하면 stdin에서 줄바꿈 구분으로 읽는다.
-  yes24.py --id_only의 출력을 파이프로 넘겨받을 수 있다.
+  yes24 --id_only의 출력을 파이프로 넘겨받을 수 있다.
 
 제약:
   - 각 리뷰 종류별 첫 페이지만 조회한다 (각 최대 약 10건).
@@ -126,7 +126,7 @@ YES24 상품 ID(숫자)를 받아 해당 도서의 리뷰를 수집한다.
   %(prog)s --order 추천순 --csv 97315227           추천순 정렬
 
 파이프라인 예 (검색 → 리뷰 수집):
-  yes24.py --id_only 위키북스 | %(prog)s --csv > 리뷰.csv
+  yes24 --id_only 위키북스 | %(prog)s --csv > 리뷰.csv
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -142,5 +142,9 @@ YES24 상품 ID(숫자)를 받아 해당 도서의 리뷰를 수집한다.
                         help="상품 ID (숫자). 생략 시 stdin에서 줄바꿈 구분으로 읽음")
     args = parser.parse_args()
     main(args.goodsid_list, args.csv, args.noheader, args.order, output_json=args.output_json)
+
+
+if __name__ == '__main__':
+    _cli()
 
 

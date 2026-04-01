@@ -24,9 +24,13 @@ def main(goodsid, strip):
         print(line)
 
 
-if __name__ == '__main__':
+def _cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("goodsid", type=str)
     parser.add_argument("--strip", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
     main(args.goodsid, args.strip)
+
+
+if __name__ == '__main__':
+    _cli()

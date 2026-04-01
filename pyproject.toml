@@ -1,0 +1,44 @@
+[project]
+name = "seopyung"
+version = "0.1.0"
+description = "한국 온라인 서점(알라딘, YES24, 교보문고) 도서 검색·리뷰 크롤러"
+requires-python = ">=3.9"
+dependencies = [
+    "beautifulsoup4",
+    "requests",
+    "html2text",
+]
+
+[project.scripts]
+aladin = "aladin:_cli"
+aladin-book-ids = "aladin_book_ids:_cli"
+aladin-review = "aladin_review:_cli"
+kyobobook = "kyobobook:_cli"
+kyobobook-book-ids = "kyobobook_book_ids:_cli"
+kyobobook-review = "kyobobook_review:_cli"
+yes24 = "yes24:_cli"
+yes24-bookinfo = "yes24_bookinfo:_cli"
+yes24-review = "yes24_review:_cli"
+yes24-toc = "yes24_toc:_cli"
+yesblog = "yesblog:_cli"
+
+[tool.setuptools]
+py-modules = [
+    "aladin",
+    "aladin_book_ids",
+    "aladin_review",
+    "kyobobook",
+    "kyobobook_book_ids",
+    "kyobobook_review",
+    "review_crawler",
+    "spider",
+    "yes24",
+    "yes24_bookinfo",
+    "yes24_review",
+    "yes24_toc",
+    "yesblog",
+]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"

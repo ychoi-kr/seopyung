@@ -131,7 +131,7 @@ def search(keyword, order, page, showurl):
     return result
 
 
-if __name__ == '__main__':
+def _cli():
     sort_names = sorted(sortmap.keys())
 
     parser = argparse.ArgumentParser(
@@ -159,7 +159,7 @@ if __name__ == '__main__':
   %(prog)s --json 파이썬                           JSON 출력
 
 파이프라인 예 (검색 → 리뷰 수집):
-  %(prog)s --id_only 파이썬 | python kyobobook_review.py --csv > 리뷰.csv
+  %(prog)s --id_only 파이썬 | kyobobook-review --csv > 리뷰.csv
 
 정렬 순서 (--order):
   {', '.join(sort_names)}
@@ -183,3 +183,7 @@ if __name__ == '__main__':
                         help="상품 ID만 출력. 줄바꿈 구분")
     args = parser.parse_args()
     main(args.keyword, args.order, args.page, args.showurl, args.csv, args.id_only, args.output_json)
+
+
+if __name__ == '__main__':
+    _cli()
