@@ -50,6 +50,8 @@ def display(info, reviewlist, csv):
 def mainloop(itemid_list, bookinfo, reviewlist, csv, noheader=False, order=None, showurl=None, output_json=False):
     if not itemid_list:
         itemid_list = sys.stdin
+    elif isinstance(itemid_list, str):
+        itemid_list = [itemid_list]
 
     if output_json:
         results = []
