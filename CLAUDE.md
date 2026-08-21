@@ -36,7 +36,7 @@ python aladin_book_ids.py --publisher 위키북스 --exact_match
 - **review_crawler.py** — 리뷰 수집 메인루프 및 CSV/텍스트 출력 공통 로직. `bookinfo`/`reviewlist` 콜백을 받아 동작.
 - **aladin_review.py** — 알라딘 리뷰 (마이리뷰 + 100자평, 구매자/비구매자 구분)
 - **yes24_review.py** — YES24 리뷰 (상품리뷰 + 한줄평). `yes24_bookinfo.py`에서 도서 정보 조회.
-- **kyobobook_review.py** — 교보문고 리뷰. API(`/api/review/list`) 사용.
+- **kyobobook_review.py** — 교보문고 리뷰. API(`/api/gw/pdt/review/list`) 사용. 도서 정보는 상세 페이지에서 `#author-info`/`#publisher-info`로 파싱.
 - **yes24.py** — YES24 도서 검색 (카테고리/정렬/출판사 필터). `--id_only`로 리뷰 스크립트에 파이프 가능.
 - **aladin_book_ids.py** / **kyobobook_book_ids.py** — 출판사 키워드로 도서 ID 목록 추출
 - **yes24_toc.py** — YES24 도서 목차 추출 (html2text 변환)

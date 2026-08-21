@@ -39,11 +39,19 @@ def bookinfo(itemid, showurl):
 #    if ebook:
 #        title = '[ebook] ' + title
 #
-    div_author = soup.find('div', class_='author')
+    # Kyobo moved the detail page to Next.js: the old class-based hooks
+    # (div.author, a.btn_publish_link, div.prod_info_text.publish_date) are gone.
+    # Author and publisher/pubdate now live under stable element ids.
+    div_author = soup.find(id='author-info')
     authors = ','.join([a_tag.text for a_tag in div_author.find_all('a')])
-    publisher = soup.find('a', class_='btn_publish_link').text
-    pubdate = soup.find('div', class_='prod_info_text publish_date').contents[-1].replace('·', '').strip()
-    pubdate = re.sub(r'(\d+)년 (\d+)월 (\d+)일', r'\1-\2-\3', pubdate)
+    div_publisher = soup.find(id='publisher-info')
+    publisher = div_publisher.find('a').text
+    pubdate = re.sub(
+        r'.*?(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일.*',
+        r'\1-\2-\3',
+        div_publisher.get_text(' ', strip=True),
+        flags=re.S,
+    )
 
     # ISBN 번호를 포함하는 td 태그 찾기
     isbn_tag = soup.find('th', string="ISBN").find_next_sibling('td')
@@ -73,7 +81,7 @@ def reviewlist(info, csv, order=None, showurl=None):
     ]
 
     qrystr = parse.urlencode(qrylist)
-    url = site + "/api/review/list?" + qrystr
+    url = site + "/api/gw/pdt/review/list?" + qrystr
     if showurl:
         print(url, file=sys.stderr)
 
@@ -124,7 +132,7 @@ def _cli():
 
 제약:
   - 첫 페이지(10건)만 조회한다.
-  - 교보문고 리뷰 API(/api/review/list)를 사용한다.
+  - 교보문고 리뷰 API(/api/gw/pdt/review/list)를 사용한다.
   - 요청 간 1초 대기.""",
         epilog="""\
 사용 예:
@@ -147,7 +155,7 @@ def _cli():
     parser.add_argument("itemid_list", nargs='?', type=str,
                         help="상품 ID. 생략 시 stdin에서 줄바꿈 구분으로 읽음")
     args = parser.parse_args()
-    main(args.itemid_list, args.csv, args.noheader, args.showurl, output_json=args.output_json)
+    main(args.itemid_list, args.csv, args.noheader, showurl=args.showurl, output_json=args.output_json)
 
 
 if __name__ == '__main__':

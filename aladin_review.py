@@ -214,7 +214,7 @@ def _cli():
     parser.add_argument("itemid_list", nargs='?', type=str,
                         help="상품 ID (숫자). 생략 시 stdin에서 줄바꿈 구분으로 읽음")
     args = parser.parse_args()
-    main(args.itemid_list, args.csv, args.noheader, args.showurl, output_json=args.output_json)
+    main(args.itemid_list, args.csv, args.noheader, showurl=args.showurl, output_json=args.output_json)
 
 
 if __name__ == '__main__':

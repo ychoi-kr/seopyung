@@ -56,9 +56,18 @@ def mainloop(itemid_list, bookinfo, reviewlist, csv, noheader=False, order=None,
     if output_json:
         results = []
         for itemid in itemid_list:
-            info = bookinfo(itemid.strip(), showurl)
-            time.sleep(1)
-            reviews = reviewlist(info, csv, order, showurl)
+            itemid = itemid.strip()
+            if not itemid:
+                continue
+            try:
+                info = bookinfo(itemid, showurl)
+                time.sleep(1)
+                reviews = reviewlist(info, csv, order, showurl)
+            except Exception as e:
+                # One dead item must not take the whole batch down.
+                print(f"{itemid}: {type(e).__name__}: {e}", file=sys.stderr)
+                time.sleep(1)
+                continue
             for review in reviews:
                 results.append({
                     "title": info["title"],
@@ -80,12 +89,19 @@ def mainloop(itemid_list, bookinfo, reviewlist, csv, noheader=False, order=None,
         print_csv_header()
 
     for itemid in itemid_list:
-        info = bookinfo(itemid.strip(), showurl)
-        time.sleep(1)
-        display(
-            info,
-            reviewlist(info, csv, order, showurl),
-            csv
-        )
+        itemid = itemid.strip()
+        if not itemid:
+            continue
+        try:
+            info = bookinfo(itemid, showurl)
+            time.sleep(1)
+            display(
+                info,
+                reviewlist(info, csv, order, showurl),
+                csv
+            )
+        except Exception as e:
+            # One dead item must not take the whole batch down.
+            print(f"{itemid}: {type(e).__name__}: {e}", file=sys.stderr)
         time.sleep(1)
 
